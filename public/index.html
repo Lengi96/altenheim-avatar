@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fdf6e3">
+  <title>Anni - Deine Begleiterin</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body data-mode="bewohner">
+
+  <noscript>
+    <p style="text-align:center; padding:2rem; font-size:1.5rem;">
+      Bitte aktiviere JavaScript, um Anni zu verwenden.
+    </p>
+  </noscript>
+
+  <!-- Phase 4.1: Willkommens-Overlay (löst auch Autoplay-TTS Problem) -->
+  <div class="welcome-overlay" id="welcome-overlay" role="dialog" aria-modal="true" aria-label="Willkommen">
+    <div class="welcome-content">
+      <div class="welcome-avatar" id="welcome-avatar">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anni">
+          <!-- Haare -->
+          <ellipse cx="100" cy="55" rx="75" ry="40" fill="#B0BEC5"/>
+          <ellipse cx="55" cy="65" rx="25" ry="30" fill="#B0BEC5"/>
+          <ellipse cx="145" cy="65" rx="25" ry="30" fill="#B0BEC5"/>
+          <ellipse cx="100" cy="45" rx="60" ry="30" fill="#CFD8DC"/>
+          <!-- Kopf -->
+          <circle cx="100" cy="105" r="85" fill="#FFECD2" stroke="#F0D9B5" stroke-width="2"/>
+          <!-- Wangen -->
+          <circle cx="58" cy="125" r="20" fill="#FFCDD2" opacity="0.45"/>
+          <circle cx="142" cy="125" r="20" fill="#FFCDD2" opacity="0.45"/>
+          <!-- Augen -->
+          <ellipse cx="72" cy="95" rx="14" ry="15" fill="#fff" stroke="#8D6E63" stroke-width="1.5"/>
+          <circle cx="72" cy="97" r="9" fill="#8D6E63"/>
+          <circle cx="72" cy="96" r="5" fill="#4E342E"/>
+          <circle cx="69" cy="92" r="3.5" fill="#fff" opacity="0.9"/>
+          <ellipse cx="128" cy="95" rx="14" ry="15" fill="#fff" stroke="#8D6E63" stroke-width="1.5"/>
+          <circle cx="128" cy="97" r="9" fill="#8D6E63"/>
+          <circle cx="128" cy="96" r="5" fill="#4E342E"/>
+          <circle cx="125" cy="92" r="3.5" fill="#fff" opacity="0.9"/>
+          <!-- Brille -->
+          <circle cx="72" cy="95" r="18" fill="none" stroke="#90A4AE" stroke-width="1.8" opacity="0.6"/>
+          <circle cx="128" cy="95" r="18" fill="none" stroke="#90A4AE" stroke-width="1.8" opacity="0.6"/>
+          <line x1="90" y1="95" x2="110" y2="95" stroke="#90A4AE" stroke-width="1.5" opacity="0.6"/>
+          <!-- Augenbrauen -->
+          <path d="M55 78 Q72 70 88 78" fill="none" stroke="#9E9E9E" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M112 78 Q128 70 145 78" fill="none" stroke="#9E9E9E" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Nase -->
+          <ellipse cx="100" cy="115" rx="4" ry="3.5" fill="#F0C8A0" opacity="0.7"/>
+          <!-- Mund -->
+          <path d="M80 138 Q100 152 120 138" fill="#F48FB1" stroke="#EC407A" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h1 class="welcome-title">Hallo! Ich bin Anni.</h1>
+      <p class="welcome-text">Deine Begleiterin zum Reden und Zuhören.</p>
+      <button class="btn welcome-start-btn" id="welcome-start-btn">
+        Hier tippen um zu starten
+      </button>
+    </div>
+  </div>
+
+  <!-- Phase 6.3: Hilfe-Button (immer sichtbar) -->
+  <button class="btn-help" id="btn-help" aria-label="Hilfe rufen">
+    Hilfe
+  </button>
+
+  <!-- Phase 6.3: Hilfe-Overlay -->
+  <div class="help-overlay" id="help-overlay" style="display:none;" role="alertdialog" aria-label="Hilfe angefordert">
+    <div class="help-content">
+      <p class="help-text">Ein Pfleger wird benachrichtigt!</p>
+      <p class="help-subtext">Bitte warte einen Moment.</p>
+      <button class="btn help-close-btn" id="help-close-btn">Verstanden</button>
+    </div>
+  </div>
+
+  <!-- Phase 4.2: Modus-Bestätigungsdialog -->
+  <div class="confirm-overlay" id="confirm-overlay" style="display:none;" role="dialog" aria-label="Bestätigung">
+    <div class="confirm-content">
+      <p class="confirm-text">Modus wechseln?</p>
+      <p class="confirm-subtext">Der Chat wird dabei gelöscht.</p>
+      <div class="confirm-buttons">
+        <button class="btn confirm-yes" id="confirm-yes">Ja, wechseln</button>
+        <button class="btn confirm-no" id="confirm-no">Nein, abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modus-Umschalter (anfangs versteckt, Phase 4.2) -->
+  <header class="mode-switcher" id="mode-switcher" style="display:none;">
+    <button class="mode-btn active" data-mode="bewohner" aria-pressed="true">Bewohner</button>
+    <button class="mode-btn" data-mode="pfleger" aria-pressed="false">Pfleger</button>
+  </header>
+
+  <!-- Phase 6.2: Offline-Banner -->
+  <div class="offline-banner" id="offline-banner" style="display:none;" role="alert">
+    Keine Internetverbindung. Anni kann gerade nicht antworten.
+  </div>
+
+  <!-- Hauptbereich -->
+  <main class="main-container">
+
+    <!-- Avatar -->
+    <div class="avatar-container" id="avatar-container" title="3 Sekunden halten für Modus-Wechsel">
+      <!-- SVG wird von avatar.js eingefügt -->
+    </div>
+
+    <!-- Status-Anzeige -->
+    <div class="status-text" id="status-text" aria-live="polite" aria-atomic="true">Hallo! Ich bin Anni.</div>
+
+    <!-- Phase 4.9: Einstellungen -->
+    <div class="settings-bar" id="settings-bar">
+      <button class="settings-btn" id="btn-font-down" aria-label="Schrift kleiner">A-</button>
+      <button class="settings-btn" id="btn-font-up" aria-label="Schrift größer">A+</button>
+      <button class="settings-btn" id="btn-speed-down" aria-label="Langsamer sprechen">🐢</button>
+      <button class="settings-btn" id="btn-speed-up" aria-label="Schneller sprechen">🐇</button>
+    </div>
+
+    <!-- Chat-Bereich -->
+    <div class="chat-area" id="chat-area" role="log" aria-live="polite" aria-label="Chat-Verlauf">
+      <!-- Nachrichten werden hier eingefügt -->
+    </div>
+
+    <!-- Eingabebereich -->
+    <div class="input-area">
+      <label for="text-input" class="visually-hidden">Nachricht eingeben</label>
+      <textarea
+        id="text-input"
+        class="text-input"
+        placeholder="Schreibe hier..."
+        rows="2"
+      ></textarea>
+      <div class="button-row">
+        <button class="btn btn-mic" id="btn-mic" aria-label="Spracheingabe starten">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+          <span class="btn-label">Sprechen</span>
+        </button>
+        <button class="btn btn-send" id="btn-send" aria-label="Nachricht senden">
+          Senden
+        </button>
+        <button class="btn btn-repeat" id="btn-repeat" aria-label="Letzte Antwort wiederholen" style="display:none;">
+          Wiederholen
+        </button>
+        <button class="btn btn-stop" id="btn-stop" aria-label="Sprachausgabe stoppen" style="display:none;">
+          Stopp
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="/js/avatar.js"></script>
+  <script src="/js/speech.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

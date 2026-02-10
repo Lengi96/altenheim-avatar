@@ -1,0 +1,11 @@
+{
+  "name": "Anni - Deine Begleiterin",
+  "short_name": "Anni",
+  "description": "Freundliche Begleiterin zum Reden und Zuhören",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdf6e3",
+  "theme_color": "#fdf6e3",
+  "lang": "de",
+  "icons": []
+}

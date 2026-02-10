@@ -1,0 +1,36 @@
+{
+  "name": "altenheim-avatar",
+  "version": "1.0.0",
+  "description": "Anni - KI-Avatar-Begleiterin für Altenheim-Bewohner mit Spracheingabe und -ausgabe",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "altenheim",
+    "avatar",
+    "claude",
+    "elderly-care",
+    "accessibility",
+    "german"
+  ],
+  "author": "Lengi96",
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lengi96/altenheim-avatar.git"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.74.0",
+    "compression": "^1.8.1",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1"
+  }
+}
