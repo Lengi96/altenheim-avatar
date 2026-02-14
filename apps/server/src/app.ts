@@ -1,9 +1,11 @@
 import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import { ipKeyGenerator } from 'express-rate-limit';
 import cors from 'cors';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
+import { isDatabaseConnectionError } from './utils/errors.js';
 
 import authRouter from './routes/auth.js';
 import residentsRouter from './routes/residents.js';
@@ -13,6 +15,21 @@ import conversationsRouter from './routes/conversations.js';
 
 export function createApp() {
   const app = express();
+
+  function keyFromJwtOrIp(req: express.Request): string {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const payload = JSON.parse(
+          Buffer.from(authHeader.slice(7).split('.')[1], 'base64').toString(),
+        );
+        return payload.userId || payload.residentId || ipKeyGenerator(req.ip || 'unknown');
+      } catch {
+        return ipKeyGenerator(req.ip || 'unknown');
+      }
+    }
+    return ipKeyGenerator(req.ip || 'unknown');
+  }
 
   app.use(
     helmet({
@@ -43,21 +60,7 @@ export function createApp() {
     message: { error: 'Zu viele Anfragen. Bitte warte einen Moment.' },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-      // Per-user rate limiting based on JWT token or IP
-      const authHeader = req.headers.authorization;
-      if (authHeader?.startsWith('Bearer ')) {
-        try {
-          const payload = JSON.parse(
-            Buffer.from(authHeader.slice(7).split('.')[1], 'base64').toString(),
-          );
-          return payload.userId || payload.residentId || req.ip || 'unknown';
-        } catch {
-          return req.ip || 'unknown';
-        }
-      }
-      return req.ip || 'unknown';
-    },
+    keyGenerator: keyFromJwtOrIp,
   });
 
   const chatLimiter = rateLimit({
@@ -66,20 +69,7 @@ export function createApp() {
     message: { error: 'Zu viele Anfragen. Bitte warte einen Moment.' },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-      const authHeader = req.headers.authorization;
-      if (authHeader?.startsWith('Bearer ')) {
-        try {
-          const payload = JSON.parse(
-            Buffer.from(authHeader.slice(7).split('.')[1], 'base64').toString(),
-          );
-          return payload.userId || payload.residentId || req.ip || 'unknown';
-        } catch {
-          return req.ip || 'unknown';
-        }
-      }
-      return req.ip || 'unknown';
-    },
+    keyGenerator: keyFromJwtOrIp,
   });
 
   app.get('/health', (_req, res) => {
@@ -100,6 +90,15 @@ export function createApp() {
       _next: express.NextFunction,
     ) => {
       logger.error('Unbehandelter Fehler:', err);
+
+      if (isDatabaseConnectionError(err)) {
+        res.status(503).json({
+          error:
+            'Datenbank nicht erreichbar. Bitte pruefe, ob PostgreSQL laeuft und die Migrationen ausgefuehrt wurden.',
+        });
+        return;
+      }
+
       res.status(500).json({ error: 'Interner Serverfehler.' });
     },
   );
