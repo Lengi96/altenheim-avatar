@@ -1,36 +1,20 @@
 {
-  "name": "altenheim-avatar",
-  "version": "1.0.0",
-  "description": "Anni - KI-Avatar-Begleiterin für Altenheim-Bewohner mit Spracheingabe und -ausgabe",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "keywords": [
-    "altenheim",
-    "avatar",
-    "claude",
-    "elderly-care",
-    "accessibility",
-    "german"
+  "name": "anni-platform",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
-  "author": "Lengi96",
-  "license": "ISC",
-  "type": "commonjs",
-  "engines": {
-    "node": ">=18.0.0"
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
+    "dev:server": "npm run dev --workspace=apps/server",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "db:generate": "npm run db:generate --workspace=apps/server",
+    "db:migrate": "npm run db:migrate --workspace=apps/server",
+    "db:seed": "npm run db:seed --workspace=apps/server"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Lengi96/altenheim-avatar.git"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.74.0",
-    "compression": "^1.8.1",
-    "dotenv": "^17.2.4",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.2.1",
-    "helmet": "^8.1.0",
-    "morgan": "^1.10.1"
+  "devDependencies": {
+    "concurrently": "^9.1.0"
   }
 }

@@ -38,21 +38,26 @@ async function getBiographyWithFacility(biographyId: string) {
 }
 
 router.get('/resident/:residentId', async (req: Request, res: Response) => {
-  const facilityId = req.auth!.facilityId;
-  const residentId = req.params.residentId as string;
+  try {
+    const facilityId = req.auth!.facilityId;
+    const residentId = req.params.residentId as string;
 
-  if (!(await verifyResidentBelongsToFacility(residentId, facilityId))) {
-    res.status(404).json({ error: 'Bewohner nicht gefunden.' });
-    return;
+    if (!(await verifyResidentBelongsToFacility(residentId, facilityId))) {
+      res.status(404).json({ error: 'Bewohner nicht gefunden.' });
+      return;
+    }
+
+    const entries = await db
+      .select()
+      .from(biographies)
+      .where(eq(biographies.residentId, residentId))
+      .orderBy(biographies.category, biographies.key);
+
+    res.json(entries);
+  } catch (err) {
+    console.error('Biographies GET Fehler:', err);
+    res.status(500).json({ error: 'Interner Serverfehler.' });
   }
-
-  const entries = await db
-    .select()
-    .from(biographies)
-    .where(eq(biographies.residentId, residentId))
-    .orderBy(biographies.category, biographies.key);
-
-  res.json(entries);
 });
 
 const createSchema = z.object({
@@ -63,27 +68,32 @@ const createSchema = z.object({
 });
 
 router.post('/resident/:residentId', validate(createSchema), async (req: Request, res: Response) => {
-  const facilityId = req.auth!.facilityId;
-  const residentId = req.params.residentId as string;
+  try {
+    const facilityId = req.auth!.facilityId;
+    const residentId = req.params.residentId as string;
 
-  if (!(await verifyResidentBelongsToFacility(residentId, facilityId))) {
-    res.status(404).json({ error: 'Bewohner nicht gefunden.' });
-    return;
+    if (!(await verifyResidentBelongsToFacility(residentId, facilityId))) {
+      res.status(404).json({ error: 'Bewohner nicht gefunden.' });
+      return;
+    }
+
+    const [entry] = await db
+      .insert(biographies)
+      .values({
+        residentId,
+        ...req.body,
+      })
+      .onConflictDoUpdate({
+        target: [biographies.residentId, biographies.category, biographies.key],
+        set: { value: req.body.value, source: req.body.source },
+      })
+      .returning();
+
+    res.status(201).json(entry);
+  } catch (err) {
+    console.error('Biographies POST Fehler:', err);
+    res.status(500).json({ error: 'Interner Serverfehler.' });
   }
-
-  const [entry] = await db
-    .insert(biographies)
-    .values({
-      residentId,
-      ...req.body,
-    })
-    .onConflictDoUpdate({
-      target: [biographies.residentId, biographies.category, biographies.key],
-      set: { value: req.body.value, source: req.body.source },
-    })
-    .returning();
-
-  res.status(201).json(entry);
 });
 
 const updateSchema = z.object({
@@ -93,44 +103,54 @@ const updateSchema = z.object({
 });
 
 router.put('/:id', validate(updateSchema), async (req: Request, res: Response) => {
-  const facilityId = req.auth!.facilityId;
-  const biographyId = req.params.id as string;
+  try {
+    const facilityId = req.auth!.facilityId;
+    const biographyId = req.params.id as string;
 
-  const existing = await getBiographyWithFacility(biographyId);
-  if (!existing) {
-    res.status(404).json({ error: 'Eintrag nicht gefunden.' });
-    return;
+    const existing = await getBiographyWithFacility(biographyId);
+    if (!existing) {
+      res.status(404).json({ error: 'Eintrag nicht gefunden.' });
+      return;
+    }
+    if (existing.facilityId !== facilityId) {
+      res.status(403).json({ error: 'Kein Zugriff auf diesen Eintrag.' });
+      return;
+    }
+
+    const [updated] = await db
+      .update(biographies)
+      .set(req.body)
+      .where(eq(biographies.id, biographyId))
+      .returning();
+
+    res.json(updated);
+  } catch (err) {
+    console.error('Biographies PUT Fehler:', err);
+    res.status(500).json({ error: 'Interner Serverfehler.' });
   }
-  if (existing.facilityId !== facilityId) {
-    res.status(403).json({ error: 'Kein Zugriff auf diesen Eintrag.' });
-    return;
-  }
-
-  const [updated] = await db
-    .update(biographies)
-    .set(req.body)
-    .where(eq(biographies.id, biographyId))
-    .returning();
-
-  res.json(updated);
 });
 
 router.delete('/:id', async (req: Request, res: Response) => {
-  const facilityId = req.auth!.facilityId;
-  const biographyId = req.params.id as string;
+  try {
+    const facilityId = req.auth!.facilityId;
+    const biographyId = req.params.id as string;
 
-  const existing = await getBiographyWithFacility(biographyId);
-  if (!existing) {
-    res.status(404).json({ error: 'Eintrag nicht gefunden.' });
-    return;
-  }
-  if (existing.facilityId !== facilityId) {
-    res.status(403).json({ error: 'Kein Zugriff auf diesen Eintrag.' });
-    return;
-  }
+    const existing = await getBiographyWithFacility(biographyId);
+    if (!existing) {
+      res.status(404).json({ error: 'Eintrag nicht gefunden.' });
+      return;
+    }
+    if (existing.facilityId !== facilityId) {
+      res.status(403).json({ error: 'Kein Zugriff auf diesen Eintrag.' });
+      return;
+    }
 
-  await db.delete(biographies).where(eq(biographies.id, biographyId));
-  res.json({ message: 'Eintrag gelÃ¶scht.' });
+    await db.delete(biographies).where(eq(biographies.id, biographyId));
+    res.json({ message: 'Eintrag geloescht.' });
+  } catch (err) {
+    console.error('Biographies DELETE Fehler:', err);
+    res.status(500).json({ error: 'Interner Serverfehler.' });
+  }
 });
 
 export default router;

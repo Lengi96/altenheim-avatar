@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
 import { env } from './config/env.js';
+import { logger } from './config/logger.js';
 
 import authRouter from './routes/auth.js';
 import residentsRouter from './routes/residents.js';
@@ -42,6 +43,21 @@ export function createApp() {
     message: { error: 'Zu viele Anfragen. Bitte warte einen Moment.' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: (req) => {
+      // Per-user rate limiting based on JWT token or IP
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        try {
+          const payload = JSON.parse(
+            Buffer.from(authHeader.slice(7).split('.')[1], 'base64').toString(),
+          );
+          return payload.userId || payload.residentId || req.ip || 'unknown';
+        } catch {
+          return req.ip || 'unknown';
+        }
+      }
+      return req.ip || 'unknown';
+    },
   });
 
   const chatLimiter = rateLimit({
@@ -50,6 +66,20 @@ export function createApp() {
     message: { error: 'Zu viele Anfragen. Bitte warte einen Moment.' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: (req) => {
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith('Bearer ')) {
+        try {
+          const payload = JSON.parse(
+            Buffer.from(authHeader.slice(7).split('.')[1], 'base64').toString(),
+          );
+          return payload.userId || payload.residentId || req.ip || 'unknown';
+        } catch {
+          return req.ip || 'unknown';
+        }
+      }
+      return req.ip || 'unknown';
+    },
   });
 
   app.get('/health', (_req, res) => {
@@ -69,7 +99,7 @@ export function createApp() {
       res: express.Response,
       _next: express.NextFunction,
     ) => {
-      console.error('Unbehandelter Fehler:', err);
+      logger.error('Unbehandelter Fehler:', err);
       res.status(500).json({ error: 'Interner Serverfehler.' });
     },
   );
