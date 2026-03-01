@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -16,7 +16,8 @@ export default function LoginPage() {
     try {
       await loginStaff(email, password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Anmeldung fehlgeschlagen.');
+      const message = err instanceof Error ? err.message : 'Anmeldung fehlgeschlagen.';
+      setError(`${message} Bitte E-Mail und Passwort pruefen und erneut versuchen.`);
     } finally {
       setLoading(false);
     }
@@ -24,7 +25,8 @@ export default function LoginPage() {
 
   return (
     <div className="login-page login-page-staff">
-      <div className="login-card">
+      <a href="#main-content" className="skip-link">Zum Inhalt springen</a>
+      <main id="main-content" className="login-card">
         <h1 className="login-title">Anni - Mitarbeiter</h1>
         <p className="login-subtitle">Melden Sie sich an, um fortzufahren.</p>
 
@@ -36,11 +38,14 @@ export default function LoginPage() {
             id="email"
             type="email"
             className="form-input"
+            name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@einrichtung.de"
+            placeholder="z. B. name@einrichtung.deâ€¦"
             required
-            autoFocus
+            autoComplete="email"
+            spellCheck={false}
+            autoCapitalize="none"
           />
 
           <label className="form-label" htmlFor="password">
@@ -50,23 +55,30 @@ export default function LoginPage() {
             id="password"
             type="password"
             className="form-input"
+            name="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Passwort"
+            placeholder="Passwort eingebenâ€¦"
             required
+            autoComplete="current-password"
           />
 
-          {error && <p className="form-error">{error}</p>}
+          {error && (
+            <p className="form-error" role="alert" aria-live="polite">
+              {error}
+            </p>
+          )}
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Anmeldung...' : 'Anmelden'}
+            {loading ? 'Anmeldung?' : 'Anmelden'}
           </button>
         </form>
 
         <Link to="/resident" className="login-staff-link">
           Bewohner-Ansicht
         </Link>
-      </div>
+      </main>
     </div>
   );
 }
+

@@ -56,6 +56,24 @@ body {
   min-height: 100dvh;
 }
 
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 999;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #000;
+  border: 2px solid var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip-link:focus-visible {
+  top: 1rem;
+}
+
 :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
@@ -74,8 +92,10 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   padding: 0 1.5rem;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn:active {
@@ -130,6 +150,66 @@ body {
   color: #d32f2f;
 }
 
+.btn-help-emergency {
+  width: 100%;
+  min-height: 4rem;
+  border: 3px solid #b71c1c;
+  border-radius: 1rem;
+  background: #d32f2f;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+}
+
+.btn-help-emergency:hover {
+  background: #b71c1c;
+}
+
+.btn-help-emergency:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.avatar-style-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.avatar-style-picker label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.avatar-style-picker select {
+  min-width: 150px;
+  padding: 0.45rem 0.6rem;
+  border: 2px solid var(--border);
+  border-radius: 0.5rem;
+  font: inherit;
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.avatar-style-picker.compact {
+  margin: 0;
+  max-width: 100%;
+}
+
+.avatar-style-picker.compact label {
+  font-size: 0.85rem;
+}
+
+.avatar-style-picker.compact select {
+  width: 100%;
+  min-width: 0;
+}
+
 /* ---- Login Pages ---- */
 
 .login-page {
@@ -166,6 +246,7 @@ body {
   font-size: 2rem;
   color: var(--accent);
   margin-bottom: 0.5rem;
+  text-wrap: balance;
 }
 
 .login-subtitle {
@@ -216,6 +297,7 @@ body {
   font-weight: 600;
   font-size: 1rem;
   padding: 0.5rem 0;
+  text-wrap: pretty;
 }
 
 .login-staff-link {
@@ -243,10 +325,14 @@ body {
 
 .chat-header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
   background: var(--bg-secondary);
+  gap: 0.5rem;
+  overflow: visible;
 }
 
 .chat-main {
@@ -267,6 +353,34 @@ body {
   align-items: center;
   gap: 0.25rem;
   flex-shrink: 0;
+}
+
+.avatar {
+  display: inline-block;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.1));
+  transform-origin: center;
+}
+
+.avatar svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.avatar-idle {
+  animation: avatarFloat 4s ease-in-out infinite;
+}
+
+.avatar-listening {
+  animation: avatarNod 1.8s ease-in-out infinite;
+}
+
+.avatar-thinking {
+  animation: avatarFloat 2.8s ease-in-out infinite;
+}
+
+.avatar-speaking {
+  animation: avatarPulse 1.2s ease-in-out infinite;
 }
 
 .chat-status {
@@ -371,6 +485,18 @@ body {
   color: #666;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .button-row {
   display: flex;
   gap: 0.75rem;
@@ -399,6 +525,7 @@ body {
 .dashboard-header h1 {
   font-size: 1.75rem;
   color: #1565c0;
+  text-wrap: balance;
 }
 
 .dashboard-header p {
@@ -475,6 +602,22 @@ body {
   40% { transform: scale(1); opacity: 1; }
 }
 
+@keyframes avatarFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes avatarNod {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-1.8deg); }
+  60% { transform: rotate(1.8deg); }
+}
+
+@keyframes avatarPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
 /* ---- Scrollbar (WebKit) ---- */
 
 .chat-area::-webkit-scrollbar {
@@ -541,6 +684,19 @@ body {
 
   .dashboard-main {
     padding: 1rem;
+  }
+
+  .chat-header {
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .chat-header .avatar-style-picker {
+    flex: 1 1 100%;
+  }
+
+  .avatar-style-picker select {
+    min-width: 0;
   }
 }
 

@@ -9,13 +9,33 @@ function authHeaders(): HeadersInit {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function toApiError(res: Response): Promise<Error> {
+  const data = await res.json().catch(() => ({}));
+  const serverMessage = typeof data.error === 'string' ? data.error : '';
+
+  if (serverMessage) {
+    return new Error(serverMessage);
+  }
+
+  if (res.status === 404) {
+    return new Error(
+      'API-Endpunkt nicht gefunden (404). Bitte pruefe, ob das Backend laeuft und die URL /api korrekt ist.',
+    );
+  }
+
+  if (res.status >= 500) {
+    return new Error('Serverfehler. Bitte versuche es in ein paar Sekunden erneut.');
+  }
+
+  return new Error(`Fehler ${res.status}`);
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { ...authHeaders() },
   });
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `Fehler ${res.status}`);
+    throw await toApiError(res);
   }
   return res.json();
 }
@@ -30,8 +50,7 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `Fehler ${res.status}`);
+    throw await toApiError(res);
   }
   return res.json();
 }
@@ -46,8 +65,7 @@ export async function apiPut<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `Fehler ${res.status}`);
+    throw await toApiError(res);
   }
   return res.json();
 }
@@ -58,9 +76,18 @@ export async function apiDelete(path: string): Promise<void> {
     headers: { ...authHeaders() },
   });
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || `Fehler ${res.status}`);
+    throw await toApiError(res);
   }
+}
+
+export interface HelpResponse {
+  ok: boolean;
+  message: string;
+  conversationId: string;
+}
+
+export async function requestUrgentHelp(conversationId?: string): Promise<HelpResponse> {
+  return apiPost<HelpResponse>('/help/urgent', { conversationId });
 }
 
 export interface StreamCallbacks {

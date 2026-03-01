@@ -12,6 +12,7 @@ import residentsRouter from './routes/residents.js';
 import biographiesRouter from './routes/biographies.js';
 import chatRouter from './routes/chat.js';
 import conversationsRouter from './routes/conversations.js';
+import helpRouter from './routes/help.js';
 
 export function createApp() {
   const app = express();
@@ -81,6 +82,7 @@ export function createApp() {
   app.use('/api/biographies', apiLimiter, biographiesRouter);
   app.use('/api/chat', chatLimiter, chatRouter);
   app.use('/api/conversations', apiLimiter, conversationsRouter);
+  app.use('/api/help', apiLimiter, helpRouter);
 
   app.use(
     (

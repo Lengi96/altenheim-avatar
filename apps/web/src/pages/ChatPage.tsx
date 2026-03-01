@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+﻿import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { streamChat } from '../lib/api';
+import { requestUrgentHelp, streamChat } from '../lib/api';
 import Avatar from '../components/Avatar';
+import AvatarStylePicker from '../components/AvatarStylePicker';
 import type { ChatMode } from '@anni/shared';
+import { getAvatarStyle, setAvatarStyle, type AvatarStyle } from '../lib/avatarStyle';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,6 +21,8 @@ export default function ChatPage() {
   const [streamingText, setStreamingText] = useState('');
   const [avatarState, setAvatarState] = useState<AvatarState>('idle');
   const [conversationId, setConversationId] = useState<string>();
+  const [helpLoading, setHelpLoading] = useState(false);
+  const [avatarStyle, setAvatarStyleState] = useState<AvatarStyle>(() => getAvatarStyle());
   const [mode] = useState<ChatMode>(role === 'resident' ? 'bewohner' : 'pfleger');
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController>(undefined);
@@ -26,7 +30,11 @@ export default function ChatPage() {
 
   const avatarName = resident?.avatarName || 'Anni';
 
-  // Tageszeitabhängige Begrüßung
+  function handleAvatarStyleChange(style: AvatarStyle) {
+    setAvatarStyleState(style);
+    setAvatarStyle(style);
+  }
+
   useEffect(() => {
     const hour = new Date().getHours();
     let greeting: string;
@@ -38,14 +46,12 @@ export default function ChatPage() {
     setMessages([{ role: 'assistant', content: greeting }]);
   }, [avatarName]);
 
-  // Abort ongoing stream on unmount
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
     };
   }, []);
 
-  // Auto-scroll
   useEffect(() => {
     if (chatAreaRef.current) {
       chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
@@ -63,7 +69,6 @@ export default function ChatPage() {
       setAvatarState('thinking');
       setStreamingText('');
 
-      // Abort any previous stream
       abortRef.current?.abort();
 
       let fullReply = '';
@@ -83,10 +88,7 @@ export default function ChatPage() {
           inputRef.current?.focus();
         },
         onError(error) {
-          setMessages((prev) => [
-            ...prev,
-            { role: 'assistant', content: error },
-          ]);
+          setMessages((prev) => [...prev, { role: 'assistant', content: error }]);
           setStreamingText('');
           setIsProcessing(false);
           setAvatarState('idle');
@@ -110,37 +112,73 @@ export default function ChatPage() {
     }
   }
 
+  async function handleUrgentHelp() {
+    if (helpLoading) return;
+    setHelpLoading(true);
+    try {
+      const result = await requestUrgentHelp(conversationId);
+      setConversationId(result.conversationId);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Ich habe sofort Hilfe angefordert. Eine Pflegekraft wird informiert.',
+        },
+      ]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Hilfeanfrage fehlgeschlagen.';
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: `Ich konnte die Hilfeanfrage nicht senden: ${message}`,
+        },
+      ]);
+    } finally {
+      setHelpLoading(false);
+    }
+  }
+
   return (
     <div className="chat-page" data-mode={mode}>
-      {/* Header */}
+      <a href="#main-content" className="skip-link">Zum Inhalt springen</a>
       <header className="chat-header">
-        <button className="btn-logout" onClick={logout} aria-label="Abmelden">
+        <AvatarStylePicker
+          id="chat-avatar-style"
+          value={avatarStyle}
+          onChange={handleAvatarStyleChange}
+          compact
+        />
+        <button type="button" className="btn-logout" onClick={logout} aria-label="Abmelden">
           Abmelden
         </button>
       </header>
 
-      <main className="chat-main">
-        {/* Avatar */}
+      <main id="main-content" className="chat-main">
         <div className="chat-avatar-area">
-          <Avatar state={avatarState} size={mode === 'bewohner' ? 140 : 100} />
+          <Avatar state={avatarState} size={mode === 'bewohner' ? 140 : 100} variant={avatarStyle} />
           <div className="chat-status" aria-live="polite">
             {avatarState === 'thinking'
               ? `${avatarName} denkt nach...`
               : avatarState === 'speaking'
                 ? `${avatarName} spricht...`
                 : avatarState === 'listening'
-                  ? 'Ich höre zu...'
-                  : `Ich bin für dich da!`}
+                  ? 'Ich hoere zu...'
+                  : 'Ich bin fuer dich da!'}
           </div>
         </div>
 
-        {/* Chat-Bereich */}
-        <div className="chat-area" ref={chatAreaRef} role="log" aria-label="Chat-Verlauf">
+        <div
+          className="chat-area"
+          ref={chatAreaRef}
+          role="log"
+          aria-label="Chat-Verlauf"
+          aria-live="polite"
+          aria-relevant="additions text"
+        >
           {messages.map((msg, i) => (
             <div key={i} className={`chat-message ${msg.role === 'user' ? 'user' : 'bot'}`}>
-              {msg.role === 'assistant' && (
-                <span className="sender-name">{avatarName}</span>
-              )}
+              {msg.role === 'assistant' && <span className="sender-name">{avatarName}</span>}
               {msg.content}
             </div>
           ))}
@@ -159,17 +197,33 @@ export default function ChatPage() {
           )}
         </div>
 
-        {/* Eingabe */}
         <form className="chat-input-area" onSubmit={handleSubmit}>
+          {mode === 'bewohner' && (
+            <button
+              type="button"
+              className="btn-help-emergency"
+              onClick={handleUrgentHelp}
+              disabled={helpLoading}
+            >
+              {helpLoading ? 'Hilfe wird angefordert...' : 'Ich brauche jetzt Hilfe'}
+            </button>
+          )}
+
+          <label htmlFor="chat-input" className="sr-only">
+            Nachricht eingeben
+          </label>
           <textarea
+            id="chat-input"
             ref={inputRef}
             className="text-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Schreibe hier..."
+            placeholder="z. B. Erzaehl mir von frueher..."
             rows={2}
             disabled={isProcessing}
+            spellCheck={true}
+            autoComplete="off"
           />
           <div className="button-row">
             <button
