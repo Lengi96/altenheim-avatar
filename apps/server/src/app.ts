@@ -6,6 +6,7 @@ import authRouter from './routes/auth';
 import residentsRouter from './routes/residents';
 import schedulesRouter from './routes/schedules';
 import conversationRouter from './routes/conversation';
+import eventsRouter from './routes/events';
 
 const app = express();
 
@@ -28,5 +29,6 @@ app.use('/api/auth', authRouter);
 app.use('/api/residents', residentsRouter);
 app.use('/api/schedules', schedulesRouter);
 app.use('/api/conversation', conversationRouter);
+app.use('/api/events', eventsRouter);
 
 export default app;

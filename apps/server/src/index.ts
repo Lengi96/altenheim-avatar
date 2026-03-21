@@ -1,9 +1,11 @@
 import app from './app';
+import { startReminderEngine } from './lib/reminderEngine';
 
 const PORT = process.env.PORT ?? 3001;
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  startReminderEngine();
 });
 
 process.on('SIGTERM', () => {
