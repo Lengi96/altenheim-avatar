@@ -23,7 +23,7 @@ export default function ConversationScreen() {
   const [transcript, setTranscript] = useState('');
   const [history, setHistory] = useState<Message[]>([]);
   const [avatarText, setAvatarText] = useState('');
-  const inactivityTimer = useRef<ReturnType<typeof setTimeout>>(null);
+  const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { startListening, stopListening, speak } = useVoice(resident?.language ?? 'de');
   const { sendMessage } = useConversationStream();

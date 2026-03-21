@@ -8,7 +8,7 @@ export default function IdleScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { resident } = useResident();
-  const inactivityTimer = useRef<ReturnType<typeof setTimeout>>(null);
+  const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const resetTimer = () => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);

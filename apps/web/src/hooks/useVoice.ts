@@ -1,20 +1,43 @@
 import { useState, useCallback, useRef } from 'react';
 
+interface SpeechRecognitionEvent {
+  results: { [index: number]: { [index: number]: { transcript: string } } };
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
+interface SpeechRecognitionInstance {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognitionInstance;
+}
+
 export function useVoice(language: string) {
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   const startListening = useCallback((): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const SpeechRecognition =
-        window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition: typeof window.SpeechRecognition }).webkitSpeechRecognition;
+      const w = window as unknown as Record<string, unknown>;
+      const SpeechRecognitionCtor = (w['SpeechRecognition'] ?? w['webkitSpeechRecognition']) as SpeechRecognitionConstructor | undefined;
 
-      if (!SpeechRecognition) {
+      if (!SpeechRecognitionCtor) {
         reject(new Error('Speech recognition not supported'));
         return;
       }
 
-      const recognition = new SpeechRecognition();
+      const recognition = new SpeechRecognitionCtor();
       recognition.lang = language === 'de' ? 'de-DE' : 'en-US';
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
