@@ -20,21 +20,27 @@ router.post('/login', async (req, res) => {
   }
 
   const { email, password } = parsed.data;
-  const user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    res.status(401).json({ error: 'Invalid credentials' });
-    return;
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      res.status(401).json({ error: 'Invalid credentials' });
+      return;
+    }
+
+    const token = jwt.sign({ userId: user.id, role: user.role }, env.JWT_SECRET, {
+      expiresIn: '8h',
+    });
+
+    res.json({
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error('Auth error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  const token = jwt.sign({ userId: user.id, role: user.role }, env.JWT_SECRET, {
-    expiresIn: '8h',
-  });
-
-  res.json({
-    token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
-  });
 });
 
 export default router;

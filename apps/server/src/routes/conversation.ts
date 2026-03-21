@@ -23,7 +23,16 @@ router.post('/stream', async (req, res) => {
   }
 
   const { residentId, message, history } = parsed.data;
-  const resident = await prisma.resident.findUnique({ where: { id: residentId } });
+
+  let resident;
+  try {
+    resident = await prisma.resident.findUnique({ where: { id: residentId } });
+  } catch (err) {
+    console.error('DB error fetching resident:', err);
+    res.status(500).json({ error: 'Database error' });
+    return;
+  }
+
   if (!resident) {
     res.status(404).json({ error: 'Resident not found' });
     return;
@@ -33,6 +42,11 @@ router.post('/stream', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
+
+  let clientDisconnected = false;
+  req.on('close', () => {
+    clientDisconnected = true;
+  });
 
   const messages: Message[] = [
     ...history,
@@ -49,28 +63,35 @@ router.post('/stream', async (req, res) => {
       preferences: resident.preferences as Record<string, unknown>,
       todaySchedule: [],
     })) {
+      if (clientDisconnected) break;
       fullResponse += chunk;
       res.write(`data: ${JSON.stringify({ type: 'delta', text: chunk })}\n\n`);
     }
 
-    res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
-    res.end();
+    if (!clientDisconnected) {
+      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+      res.end();
+    }
 
-    prisma.conversation
-      .create({
-        data: {
-          residentId,
-          messages: [
-            ...messages,
-            { role: 'assistant', content: fullResponse, timestamp: new Date().toISOString() },
-          ],
-        },
-      })
-      .catch(console.error);
+    if (fullResponse) {
+      prisma.conversation
+        .create({
+          data: {
+            residentId,
+            messages: [
+              ...messages,
+              { role: 'assistant', content: fullResponse, timestamp: new Date().toISOString() },
+            ],
+          },
+        })
+        .catch(console.error);
+    }
   } catch (err) {
     console.error('Conversation stream error:', err);
-    res.write(`data: ${JSON.stringify({ type: 'error', message: 'Entschuldigung, ich habe einen Fehler. Bitte versuchen Sie es erneut.' })}\n\n`);
-    res.end();
+    if (!clientDisconnected && !res.writableEnded) {
+      res.write(`data: ${JSON.stringify({ type: 'error', message: 'Entschuldigung, ich habe einen Fehler. Bitte versuchen Sie es erneut.' })}\n\n`);
+      res.end();
+    }
   }
 });
 

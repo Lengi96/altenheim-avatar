@@ -13,8 +13,21 @@ class EventBus {
   private connections = new Map<ResidentId, Response>();
 
   register(residentId: ResidentId, res: Response): void {
+    // If there's an existing connection, remove its close listener to prevent
+    // the old listener from deleting the new entry when the old connection closes.
+    const existing = this.connections.get(residentId);
+    if (existing) {
+      existing.removeAllListeners('close');
+    }
+
     this.connections.set(residentId, res);
-    res.on('close', () => this.connections.delete(residentId));
+
+    res.on('close', () => {
+      // Only delete if this response is still the registered one
+      if (this.connections.get(residentId) === res) {
+        this.connections.delete(residentId);
+      }
+    });
   }
 
   send(residentId: ResidentId, event: ReminderEvent): boolean {
