@@ -72,4 +72,7 @@ model Notification {
   type         String
   acknowledged Boolean  @default(false)
   createdAt    DateTime @default(now())
+
+  @@index([residentId])
+  @@index([residentId, acknowledged])
 }
