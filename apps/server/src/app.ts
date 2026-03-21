@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import authRouter from './routes/auth';
 import residentsRouter from './routes/residents';
+import schedulesRouter from './routes/schedules';
 
 const app = express();
 
@@ -24,5 +25,6 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/residents', residentsRouter);
+app.use('/api/schedules', schedulesRouter);
 
 export default app;
