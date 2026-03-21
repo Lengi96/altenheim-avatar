@@ -1,0 +1,47 @@
+{
+  "idle": {
+    "greeting": "Hallo, {{name}}!",
+    "tapToTalk": "Tippen zum Sprechen",
+    "videoCall": "Video Anruf",
+    "games": "Spiele",
+    "music": "Musik"
+  },
+  "conversation": {
+    "listening": "Ich höre zu...",
+    "thinking": "Ich denke...",
+    "endCall": "Gespräch beenden",
+    "error": "Entschuldigung, ich habe Sie nicht verstanden. Bitte versuchen Sie es erneut."
+  },
+  "reminder": {
+    "title": "Erinnerung",
+    "medication": "Zeit für Ihre Medikamente",
+    "appointment": "Sie haben einen Termin",
+    "activity": "Zeit für eine Aktivität",
+    "confirm": "Bestätigen",
+    "snooze": "Später erinnern"
+  },
+  "games": {
+    "memory": "Memory",
+    "trivia": "Quiz",
+    "backToHome": "Zurück"
+  },
+  "music": {
+    "title": "Musik",
+    "backToHome": "Zurück"
+  },
+  "video": {
+    "title": "Video Anruf",
+    "backToHome": "Zurück",
+    "roomPlaceholder": "Raum-Link eingeben"
+  },
+  "admin": {
+    "login": "Anmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "residents": "Bewohner",
+    "schedules": "Termine",
+    "notifications": "Benachrichtigungen",
+    "logout": "Abmelden"
+  },
+  "offline": "Keine Verbindung — wird wiederhergestellt..."
+}

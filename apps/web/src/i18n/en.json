@@ -1,0 +1,47 @@
+{
+  "idle": {
+    "greeting": "Hello, {{name}}!",
+    "tapToTalk": "Tap to Talk",
+    "videoCall": "Video Call",
+    "games": "Games",
+    "music": "Music"
+  },
+  "conversation": {
+    "listening": "I'm listening...",
+    "thinking": "Thinking...",
+    "endCall": "End conversation",
+    "error": "Sorry, I didn't understand. Please try again."
+  },
+  "reminder": {
+    "title": "Reminder",
+    "medication": "Time for your medication",
+    "appointment": "You have an appointment",
+    "activity": "Time for an activity",
+    "confirm": "Confirm",
+    "snooze": "Remind me later"
+  },
+  "games": {
+    "memory": "Memory",
+    "trivia": "Trivia",
+    "backToHome": "Back"
+  },
+  "music": {
+    "title": "Music",
+    "backToHome": "Back"
+  },
+  "video": {
+    "title": "Video Call",
+    "backToHome": "Back",
+    "roomPlaceholder": "Enter room link"
+  },
+  "admin": {
+    "login": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "residents": "Residents",
+    "schedules": "Schedules",
+    "notifications": "Notifications",
+    "logout": "Sign out"
+  },
+  "offline": "No connection — reconnecting..."
+}
