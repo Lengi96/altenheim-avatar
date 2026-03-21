@@ -4,10 +4,10 @@
 
 * {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 body {
   @apply bg-gray-950 text-white;
   font-size: 1.25rem;
-  touch-action: manipulation;
 }
