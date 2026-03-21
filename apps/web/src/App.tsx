@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ResidentProvider } from './context/ResidentContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
 import IdleScreen from './screens/IdleScreen';
 import ConversationScreen from './screens/ConversationScreen';
 import VideoScreen from './screens/VideoScreen';
@@ -23,8 +24,8 @@ export default function App() {
           <Route path="/video" element={<VideoScreen />} />
           <Route path="/games" element={<GamesScreen />} />
           <Route path="/music" element={<MusicScreen />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin/login" element={<AdminAuthProvider><AdminLogin /></AdminAuthProvider>} />
+          <Route path="/admin" element={<AdminAuthProvider><AdminLayout /></AdminAuthProvider>}>
             <Route index element={<Navigate to="/admin/residents" replace />} />
             <Route path="residents" element={<AdminResidents />} />
             <Route path="schedules" element={<AdminSchedules />} />
