@@ -1,0 +1,15 @@
+{
+  "name": "altenheim-avatar",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,green \"npm run dev -w apps/server\" \"npm run dev -w apps/web\"",
+    "build": "npm run build -w apps/server && npm run build -w apps/web",
+    "test": "npm run test -w apps/server && npm run test -w apps/web",
+    "db:migrate": "npm run db:migrate -w apps/server",
+    "db:seed": "npm run db:seed -w apps/server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
