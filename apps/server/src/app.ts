@@ -4,7 +4,14 @@ import helmet from 'helmet';
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'", process.env.CORS_ORIGIN ?? 'http://localhost:5173'],
+    },
+  },
+}));
 app.use(cors({ origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173' }));
 app.use(express.json());
 
