@@ -7,6 +7,7 @@ import residentsRouter from './routes/residents';
 import schedulesRouter from './routes/schedules';
 import conversationRouter from './routes/conversation';
 import eventsRouter from './routes/events';
+import notificationsRouter from './routes/notifications';
 
 const app = express();
 
@@ -30,5 +31,6 @@ app.use('/api/residents', residentsRouter);
 app.use('/api/schedules', schedulesRouter);
 app.use('/api/conversation', conversationRouter);
 app.use('/api/events', eventsRouter);
+app.use('/api/notifications', notificationsRouter);
 
 export default app;
