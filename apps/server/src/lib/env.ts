@@ -1,4 +1,8 @@
+import { config } from 'dotenv';
 import { z } from 'zod';
+
+// Load .env before parsing — override system vars so local .env always wins
+config({ override: true });
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
