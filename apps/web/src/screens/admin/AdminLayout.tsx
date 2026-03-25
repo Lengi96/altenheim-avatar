@@ -39,7 +39,7 @@ export default function AdminLayout() {
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-auto p-8">
+      <div className="flex-1 overflow-auto p-8 text-gray-900">
         <Outlet />
       </div>
     </div>

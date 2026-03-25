@@ -1,15 +1,22 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import app from '../app';
+import { prisma } from '../lib/prisma';
 
 let authToken: string;
 const RESIDENT_ID = 'demo-resident-id-0000-000000000001';
+const createdIds: string[] = [];
 
 beforeAll(async () => {
   const res = await request(app)
     .post('/api/auth/login')
     .send({ email: 'admin@altenheim.de', password: 'admin123' });
   authToken = res.body.token;
+});
+
+afterAll(async () => {
+  await prisma.schedule.deleteMany({ where: { id: { in: createdIds } } });
+  await prisma.$disconnect();
 });
 
 describe('GET /api/schedules?residentId=', () => {
@@ -35,5 +42,6 @@ describe('POST /api/schedules', () => {
       });
     expect(res.status).toBe(201);
     expect(res.body.title).toBe('Abendmedikamente');
+    if (res.body.id) createdIds.push(res.body.id);
   });
 });

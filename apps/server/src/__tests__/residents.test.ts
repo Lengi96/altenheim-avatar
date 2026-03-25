@@ -1,14 +1,21 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import app from '../app';
+import { prisma } from '../lib/prisma';
 
 let authToken: string;
+const createdIds: string[] = [];
 
 beforeAll(async () => {
   const res = await request(app)
     .post('/api/auth/login')
     .send({ email: 'admin@altenheim.de', password: 'admin123' });
   authToken = res.body.token;
+});
+
+afterAll(async () => {
+  await prisma.resident.deleteMany({ where: { id: { in: createdIds } } });
+  await prisma.$disconnect();
 });
 
 describe('GET /api/residents', () => {
@@ -42,6 +49,7 @@ describe('POST /api/residents', () => {
       .send({ name: 'Hans Schmidt', roomNumber: '5B', language: 'de' });
     expect(res.status).toBe(201);
     expect(res.body.name).toBe('Hans Schmidt');
+    if (res.body.id) createdIds.push(res.body.id);
   });
 
   it('returns 400 for missing name', async () => {
