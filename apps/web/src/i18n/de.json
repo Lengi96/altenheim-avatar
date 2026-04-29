@@ -11,7 +11,10 @@
     "listening": "Ich höre zu...",
     "thinking": "Ich denke...",
     "endCall": "Gespräch beenden",
-    "error": "Entschuldigung, ich habe Sie nicht verstanden. Bitte versuchen Sie es erneut."
+    "error": "Entschuldigung, ich habe Sie nicht verstanden. Bitte versuchen Sie es erneut.",
+    "textPlaceholder": "Nachricht eingeben und Senden drücken...",
+    "send": "Senden",
+    "toggleKeyboard": "Tastatureingabe umschalten"
   },
   "reminder": {
     "title": "Erinnerung",

@@ -11,7 +11,10 @@
     "listening": "I'm listening...",
     "thinking": "Thinking...",
     "endCall": "End conversation",
-    "error": "Sorry, I didn't understand. Please try again."
+    "error": "Sorry, I didn't understand. Please try again.",
+    "textPlaceholder": "Type a message and press Send...",
+    "send": "Send",
+    "toggleKeyboard": "Toggle keyboard input"
   },
   "reminder": {
     "title": "Reminder",
