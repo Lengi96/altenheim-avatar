@@ -1,13 +1,18 @@
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useResident } from '../context/ResidentContext';
 
+const SNOOZE_MS = 5 * 60 * 1000;
+
 export default function ReminderOverlay() {
   const { t } = useTranslation();
-  const { pendingReminder, clearReminder } = useResident();
+  const { pendingReminder, clearReminder, snoozeReminder } = useResident();
+  const snoozeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (!pendingReminder) return null;
 
   const handleAcknowledge = async () => {
+    if (snoozeTimer.current) clearTimeout(snoozeTimer.current);
     try {
       await fetch(`/api/notifications/${pendingReminder.scheduleId}/acknowledge`, {
         method: 'PATCH',
@@ -19,11 +24,11 @@ export default function ReminderOverlay() {
   };
 
   const handleSnooze = () => {
+    const snoozed = { ...pendingReminder };
     clearReminder();
-    setTimeout(() => {
-      // Snooze: re-show after 5 min by re-setting the reminder
-      // In practice the server will send a new one on the next cron cycle
-    }, 5 * 60 * 1000);
+    snoozeTimer.current = setTimeout(() => {
+      snoozeReminder(snoozed);
+    }, SNOOZE_MS);
   };
 
   return (

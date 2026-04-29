@@ -12,12 +12,14 @@ import AdminResidents from './screens/admin/AdminResidents';
 import AdminSchedules from './screens/admin/AdminSchedules';
 import AdminNotifications from './screens/admin/AdminNotifications';
 import ReminderOverlay from './components/ReminderOverlay';
+import OfflineBanner from './components/OfflineBanner';
 
 export default function App() {
   return (
     <BrowserRouter>
       <ResidentProvider>
         <ReminderOverlay />
+        <OfflineBanner />
         <Routes>
           <Route path="/" element={<IdleScreen />} />
           <Route path="/conversation" element={<ConversationScreen />} />
