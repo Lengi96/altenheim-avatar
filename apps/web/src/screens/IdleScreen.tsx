@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useResident } from '../context/ResidentContext';
 import AvatarAnimation from '../components/AvatarAnimation';
+import { useClock } from '../hooks/useClock';
 
 export default function IdleScreen() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { resident } = useResident();
   const inactivityTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const locale = resident?.language === 'en' ? 'en-GB' : 'de-DE';
+  const { time, date } = useClock(locale);
 
   const resetTimer = () => {
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
@@ -29,6 +32,23 @@ export default function IdleScreen() {
 
   return (
     <div className="flex h-screen flex-col items-center justify-between bg-gray-950 p-8">
+      {/* Clock / date bar at the top */}
+      <div className="flex w-full max-w-2xl items-center justify-between text-gray-300">
+        <time
+          aria-label={date}
+          className="text-kiosk-sm"
+          dateTime={new Date().toISOString().slice(0, 10)}
+        >
+          {date}
+        </time>
+        <time
+          aria-label={time}
+          className="text-kiosk-xl font-bold tabular-nums text-white"
+        >
+          {time}
+        </time>
+      </div>
+
       <div className="flex flex-1 flex-col items-center justify-center gap-4">
         <AvatarAnimation state="idle" name={resident.avatarName} />
         <h1 className="text-kiosk-2xl font-bold text-white">
