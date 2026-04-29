@@ -20,6 +20,7 @@ interface ResidentContextValue {
   setResidentId: (id: string) => void;
   pendingReminder: ReminderEvent | null;
   clearReminder: () => void;
+  snoozeReminder: (reminder: ReminderEvent) => void;
 }
 
 const ResidentCtx = createContext<ResidentContextValue | null>(null);
@@ -67,6 +68,7 @@ export function ResidentProvider({ children }: { children: ReactNode }) {
         setResidentId,
         pendingReminder,
         clearReminder: () => setPendingReminder(null),
+        snoozeReminder: (reminder) => setPendingReminder(reminder),
       }}
     >
       {children}
