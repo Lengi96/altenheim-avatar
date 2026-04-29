@@ -11,3 +11,21 @@ body {
   @apply bg-gray-950 text-white;
   font-size: 1.25rem;
 }
+
+/* Global focus-visible ring for keyboard / switch-control users */
+@layer base {
+  :focus-visible {
+    @apply outline-none ring-4 ring-white ring-offset-2 ring-offset-gray-950;
+  }
+}
+
+/* Respect reduced-motion preference — disable all animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

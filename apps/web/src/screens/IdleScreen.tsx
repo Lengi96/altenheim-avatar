@@ -36,32 +36,36 @@ export default function IdleScreen() {
         </h1>
       </div>
 
-      <div className="grid w-full max-w-2xl grid-cols-2 gap-4">
+      <nav aria-label={t('idle.navigation')} className="grid w-full max-w-2xl grid-cols-2 gap-4">
         <button
+          aria-label={t('idle.tapToTalk')}
           className="col-span-2 flex min-h-touch items-center justify-center rounded-2xl bg-blue-600 p-6 text-kiosk-xl font-bold text-white shadow-lg active:bg-blue-700"
           onClick={() => navigate('/conversation')}
         >
           🎤 {t('idle.tapToTalk')}
         </button>
         <button
+          aria-label={t('idle.videoCall')}
           className="flex min-h-touch items-center justify-center rounded-2xl bg-green-600 p-4 text-kiosk-lg font-semibold text-white shadow-lg active:bg-green-700"
           onClick={() => navigate('/video')}
         >
           📹 {t('idle.videoCall')}
         </button>
         <button
-          className="flex min-h-touch items-center justify-center rounded-2xl bg-yellow-600 p-4 text-kiosk-lg font-semibold text-white shadow-lg active:bg-yellow-700"
+          aria-label={t('idle.games')}
+          className="flex min-h-touch items-center justify-center rounded-2xl bg-orange-700 p-4 text-kiosk-lg font-semibold text-white shadow-lg active:bg-orange-800"
           onClick={() => navigate('/games')}
         >
           🎮 {t('idle.games')}
         </button>
         <button
+          aria-label={t('idle.music')}
           className="col-span-2 flex min-h-touch items-center justify-center rounded-2xl bg-purple-600 p-4 text-kiosk-lg font-semibold text-white shadow-lg active:bg-purple-700"
           onClick={() => navigate('/music')}
         >
           🎵 {t('idle.music')}
         </button>
-      </div>
+      </nav>
     </div>
   );
 }
