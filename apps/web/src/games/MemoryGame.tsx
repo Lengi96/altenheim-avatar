@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 const EMOJIS = ['🌸', '🌺', '🌼', '🌻', '🍎', '🍊', '🍋', '🍇'];
 
@@ -20,6 +20,14 @@ export default function MemoryGame() {
   const [selected, setSelected] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [won, setWon] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [bestMoves, setBestMoves] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
 
   const handleFlip = useCallback(
     (idx: number) => {
@@ -33,7 +41,8 @@ export default function MemoryGame() {
       setSelected(newSelected);
 
       if (newSelected.length === 2) {
-        setMoves(m => m + 1);
+        const nextMoves = moves + 1;
+        setMoves(nextMoves);
         const [a, b] = newSelected;
         if (newCards[a].emoji === newCards[b].emoji) {
           const matched = newCards.map((c, i) =>
@@ -41,7 +50,11 @@ export default function MemoryGame() {
           );
           setCards(matched);
           setSelected([]);
-          if (matched.every(c => c.matched)) setWon(true);
+          if (matched.every(c => c.matched)) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            setWon(true);
+            setBestMoves(prev => prev === null || nextMoves < prev ? nextMoves : prev);
+          }
         } else {
           setTimeout(() => {
             setCards(prev =>
@@ -52,17 +65,32 @@ export default function MemoryGame() {
         }
       }
     },
-    [cards, selected]
+    [cards, selected, moves]
   );
+
+  const handleRestart = () => {
+    setCards(makeCards());
+    setSelected([]);
+    setMoves(0);
+    setWon(false);
+    setSeconds(0);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
+  };
+
+  const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
   if (won) {
     return (
       <div className="flex flex-col items-center gap-6 py-8">
         <p className="text-kiosk-2xl">🎉 Gewonnen!</p>
-        <p className="text-kiosk-lg text-gray-300">{moves} Züge</p>
+        <p className="text-kiosk-xl text-green-400">{moves} Züge · {formatTime(seconds)}</p>
+        {bestMoves !== null && (
+          <p className="text-kiosk-base text-yellow-400">🏆 Bestleistung: {bestMoves} Züge</p>
+        )}
         <button
-          className="min-h-touch rounded-2xl bg-blue-600 px-8 py-4 text-kiosk-lg text-white"
-          onClick={() => { setCards(makeCards()); setSelected([]); setMoves(0); setWon(false); }}
+          className="min-h-touch rounded-2xl bg-blue-600 px-8 py-4 text-kiosk-lg text-white active:bg-blue-700"
+          onClick={handleRestart}
         >
           Nochmal spielen
         </button>
@@ -72,13 +100,25 @@ export default function MemoryGame() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <p className="text-kiosk-base text-gray-400">Züge: {moves}</p>
+      <div className="flex w-full max-w-sm items-center justify-between text-kiosk-base text-gray-400">
+        <span>Züge: <strong className="text-white">{moves}</strong></span>
+        <span>⏱ {formatTime(seconds)}</span>
+        {bestMoves !== null && <span className="text-yellow-400">🏆 {bestMoves}</span>}
+      </div>
+
       <div className="grid grid-cols-4 gap-3">
         {cards.map((card, i) => (
           <button
             key={card.id}
-            className={`h-20 w-20 rounded-xl text-4xl shadow-md transition-all ${
-              card.flipped || card.matched ? 'bg-blue-600' : 'bg-gray-700'
+            aria-label={card.flipped || card.matched ? card.emoji : 'Verdeckte Karte'}
+            aria-pressed={card.flipped || card.matched}
+            disabled={card.matched || selected.length === 2}
+            className={`h-24 w-24 rounded-xl text-5xl shadow-md transition-all duration-200 disabled:cursor-default ${
+              card.matched
+                ? 'bg-green-700 opacity-60'
+                : card.flipped
+                ? 'bg-blue-600 scale-105'
+                : 'bg-gray-700 hover:bg-gray-600'
             }`}
             onClick={() => handleFlip(i)}
           >
